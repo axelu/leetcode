@@ -1,0 +1,41 @@
+#!/bin/sh
+
+makefile=Makefile
+CC=clang++
+CXXFLAGS=--std=c++17
+EXECDIR=build
+
+
+srcs=`ls -x *.cpp`
+all=""
+for src in $srcs
+do
+   all="${all} ${src%.cpp}"
+done
+
+printf 'CC=%s\n' $CC >$makefile
+printf 'CXXFLAGS=%s\n' $CXXFLAGS>>$makefile
+printf 'EXECDIR=%s\n' $EXECDIR >>$makefile
+printf '\n' >>$makefile
+printf 'all:' >>$makefile
+printf ' %s' $all >>$makefile
+printf '\n' >>$makefile
+printf '\n' >>$makefile
+printf '.PHONY: clean\n' >>$makefile
+printf 'clean:\n' >>$makefile
+printf '\trm -rf ./$(EXECDIR)/\n' >>$makefile
+printf '\n' >>$makefile
+printf '$(EXECDIR):\n' >>$makefile
+printf '\tmkdir -p $(EXECDIR)\n' >>$makefile
+
+for src in $srcs
+do
+    printf '\n' >>$makefile
+    printf '.PHONY: %s\n' ${src%.cpp} >>$makefile
+    printf '%s: $(EXECDIR)/%s\n' ${src%.cpp} ${src%.cpp} >>$makefile
+    printf '\n' >>$makefile
+    printf '$(EXECDIR)/%s: | $(EXECDIR)\n' ${src%.cpp} >>$makefile
+	printf '\t$(CC) $(CXXFLAGS) -o $@ $(subst $(EXECDIR)/,,$@).cpp\n' >>$makefile
+done
+
+echo 'Makefile generation complete, type make to build.'
