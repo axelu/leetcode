@@ -1,7 +1,9 @@
 
 // Count Smaller after self
 // https://leetcode.com/problems/count-of-smaller-numbers-after-self/
-
+// passed when originally submitted
+// but when it became part of June 2021 challenged, it got TLE
+// see countsmallerafterself2.cpp for solution that passed
 
 
 
