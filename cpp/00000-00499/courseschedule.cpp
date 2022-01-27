@@ -56,7 +56,7 @@ public:
         for(int i = 0; i < numCourses; ++i)
             for(int j : al[i]) {
                 // parent (i) idx must be lower than child (j) idx else cyclic
-                if( pos[i] > pos[j] )
+                if( pos[i] >= pos[j] )
                     return false;
             }
 

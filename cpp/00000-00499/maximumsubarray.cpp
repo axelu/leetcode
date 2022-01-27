@@ -11,16 +11,11 @@ using namespace std;
 // https://leetcode.com/problems/maximum-subarray/
 // Divide and Conquer approach 
 // help at https://www.geeksforgeeks.org/maximum-subarray-sum-using-divide-and-conquer-algorithm/
+// Kadane’s Algorithm
+// https://medium.com/@rsinghal757/kadanes-algorithm-dynamic-programming-how-and-why-does-it-work-3fd8849ed73d
+
 
 class Solution {
-public:
-    int maxSubArray(vector<int>& nums) {
-
-        if ( nums.empty() ) return INT_MIN;
-        if ( nums.size() == 1 ) return nums[0];
-
-        return maxSubArray(nums.begin(), nums.end() - 1);
-    }
 private:
     int maxSubArray(vector<int>::iterator first, vector<int>::iterator last) {
 
@@ -55,6 +50,34 @@ private:
         }
 
         return max({lsum + rsum, lsum, rsum});
+    }
+    
+public:
+    int maxSubArray(vector<int>& nums) {
+        /*
+        // Kadane’s Algorithm	
+        
+	    int n = nums.size();
+	    int local_max = 0;
+	    int global_max = INT_MIN;
+
+	    for(int i = 0; i < n; ++i) {
+		    local_max = max(nums[i], nums[i] + local_max);
+		    if( local_max > global_max )
+			    global_max = local_max;
+	    }
+	
+	    return global_max;
+        */
+        
+        
+        // divide and conquer
+        
+        if ( nums.empty() ) return INT_MIN;
+        if ( nums.size() == 1 ) return nums[0];
+
+        return maxSubArray(nums.begin(), nums.end() - 1);
+        
     }
 };
 

@@ -2,9 +2,6 @@
 // 146. LRU Cache
 // https://leetcode.com/problems/lru-cache/
 
-
-
-
 class LRUCache {
 private:
     // Definition of a doubly-linked list
@@ -13,15 +10,16 @@ private:
         int val;
         ListNode *prev;
         ListNode *next;
-        ListNode() : val(0), prev(nullptr), next(nullptr) {}
+        ListNode() : key(0), val(0), prev(nullptr), next(nullptr) {}
         ListNode(int k, int v) : key(k), val(v), prev(nullptr), next(nullptr) {}
         ListNode(int k, int v, ListNode *prev) : key(k), val(v), prev(prev), next(nullptr) {}
     };
-    map<int,ListNode*> m;
+    ListNode* la[10001];
     int Capacity; // total capacity
+    int c; // current count
     ListNode* front;
     ListNode* back;
-
+    
     void prnt() {
         ListNode* ln = front;
         cout << "cache: ";
@@ -29,9 +27,9 @@ private:
             cout << ln->val << " ";
             ln = ln->next;
         }
-        cout << endl;
+        cout << endl;        
     }
-
+    
     void age(ListNode* ln) {
         // cout << "age called: " << ln->val << endl;
         // cout << "before "; prnt();
@@ -54,41 +52,49 @@ public:
         Capacity = capacity;
         front = nullptr;
         back = nullptr;
+        for(int i = 0; i < 10001; ++i)
+           la[i] = nullptr;
+        c = 0;
     }
-
+    
     int get(int key) {
         // cout << "get called: " << key << endl;
-        map<int,ListNode*>::iterator f = m.find(key);
-        if( f != m.end() ) {
-            age(f->second);
-            return f->second->val;
+        if( la[key] != nullptr ) {
+            age(la[key]);
+            return la[key]->val;
         }
         return -1;
     }
-
+    
     void put(int key, int value) {
         // cout << "put called: " << key << " " << value << endl;
-        map<int,ListNode*>::iterator f = m.find(key);
-        if( f != m.end() ) {
-            ListNode* ln = f->second;
+        // map<int,ListNode*>::iterator f = m.find(key);
+        ListNode* ln;
+        if( la[key] != nullptr ) {
+            ln = la[key];
             // update value
             ln->val = value;
             // age
             age(ln);
         } else {
             // cout << "before "; prnt();
-            if( m.size() == Capacity ) {
+            if( c == Capacity ) {
                 // evict front
                 // cout << "put evicting " << front->key << endl;
                 ListNode* nf = front->next;
                 if( front == back ) back = nullptr; // Capacity == 1
-                m.erase(front->key);
-                delete front;
+                la[front->key] = nullptr;
+                // delete front;
+                ln = front;
                 front = nf;
                 if( front != nullptr) front->prev = nullptr;
+            } else {
+                ln = new ListNode();
+                ++c;
             }
             // create and insert in back
-            ListNode* ln = new ListNode(key,value);
+            // ListNode* ln = new ListNode(key,value);
+            ln->key = key;ln->val = value;
             if( back != nullptr ) {
                 back->next = ln;
                 ln->prev = back;
@@ -96,10 +102,10 @@ public:
                 front = ln;
             }
             back = ln;
-            m.insert({key,ln});
+            la[key] = ln;
             // cout << "after "; prnt();
         }
-
+        
     }
 };
 

@@ -19,7 +19,7 @@ public:
 
         // v will hold the number of riders at the begin
         // and end of each kilometer
-        vector<vector<int>> v(1000, vector<int> (2, 0));
+        vector<vector<int>> v(1001, vector<int> (2, 0));
 
         for(auto trip : trips) {
             // pickup
