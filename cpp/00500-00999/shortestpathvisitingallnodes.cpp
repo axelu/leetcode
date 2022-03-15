@@ -3,7 +3,101 @@
 // https://leetcode.com/problems/shortest-path-visiting-all-nodes/
 
 
+class Solution {
+private:
+    // debug
+    void printBinary(int x) {
+        for(int i = 11; i >= 0; --i) {
+            if( x & (1 << i) ) cout << 1;
+            else cout << 0;
+        }
+        // cout << endl;
+    }
+    
+    int countSetBits(int i) {
+        unsigned int count = 0;
+        while (i) {
+            count += i & 1;
+            i >>= 1;
+        }
+        return count;
+    }
 
+public:
+    int shortestPathLength(vector<vector<int>>& graph) {
+        // undirected connected graph of n nodes labeled from 0 to n - 1
+        int n = graph.size(); // 1 <= n <= 12
+        
+        // array<int,3> distance,current node, mask of visited nodes
+
+        // min heap based on weight, respectively distance
+        auto cmp = [&] (const array<int,3>& a, const array<int,3>& b) { 
+            if( a[0] > b[0] ) {
+                return true;
+            } else if( a[0] == b[0] ) {
+                if( countSetBits(a[2]) < countSetBits(b[2]) )
+                    return true;
+            }
+            return false;
+        };
+        priority_queue<array<int,3>,vector<array<int,3>>,decltype(cmp)> pq(cmp);
+
+        // seen
+        // bits from the left 0-11 mask, 12-15 u, 16-31 distance
+        // that gives us a distance of 65535
+        unordered_set<int> seen;
+
+        // push our source vertex into priority queue with a distance of 0
+        // we are starting from every vertex 0 to n-1
+        // set distance to our source vertex itself to 0
+        int mask,t;
+        for(int i = 0; i < n; ++i) {
+            mask = 0 ^ (1 << i); // set the ith bit = mark our source vertex as visited
+            pq.push({0,i,mask});
+            
+            t = mask + (i<<12);
+            seen.insert(t);
+        }
+
+        
+        int all = pow(2,n) - 1;
+        
+        int d,u,v,mask_v;
+        while(!pq.empty()) {
+
+            d    = pq.top()[0]; // distance that got us here
+            u    = pq.top()[1]; // current node
+            mask = pq.top()[2]; // mask of visited nodes
+            pq.pop();
+            // cout << "d " << d << " u " << u << " mask "; printBinary(mask); cout << endl;
+            
+            if( mask == all )
+                return d;
+            
+            // from our current node, we can go to any other node
+            // that we have an edge to, including nodes we have
+            // already visited
+            
+            for(int i = 0; i < graph[u].size(); ++i) {
+                v = graph[u][i];
+                mask_v = 0 ^ (1 << v);
+                t = (mask|mask_v) + (v<<12) + (d<<16);
+                if( seen.count(t) )
+                    continue;
+                seen.insert(t);
+                pq.push({d+1,v,mask|mask_v});
+            }
+            
+        }
+        
+        // satisfy compiler
+        return 99;
+    }
+};
+
+
+// below passed 7/14/2021, but too slow when new test was added,
+// so failed with TLE 2/25/2022
 
 class Solution {
 public:

@@ -5,27 +5,34 @@
 // https://leetcode.com/explore/challenge/card/september-leetcoding-challenge-2021/640/week-5-september-29th-september-30th/3993/
 
 
-
-
 class Solution {
 private:
+    int mem[17][65536];
+
     bool rec(int nums[], int n, int pos, int sum, int k, int target, int& used) {
         if( k == 1 )
             return true;
 
-        if( sum == target )
-            return rec(nums,n,0,0,k-1,target,used);
+        if( mem[k][used] != -1 )
+            return mem[k][used];
+
+
+        if( sum == target ) {
+            return mem[k][used] = rec(nums,n,0,0,k-1,target,used);
+        }
 
         for(int i = pos; i < n; ++i) {
             if( !((used >> i) & 1) && sum + nums[i] <= target ) {
                 used |= 1 << i;     // set bit
-                if( rec(nums,n,i+1,sum+nums[i],k,target,used) )
-                    return true;
+                if( rec(nums,n,i+1,sum+nums[i],k,target,used) ) {
+                    used &= ~(1 << i);  // clear bit
+                    return mem[k][used] = true;
+                }
                 used &= ~(1 << i);  // clear bit
             }
         }
 
-        return false;
+        return mem[k][used] = false;
     }
 
 public:
@@ -49,6 +56,7 @@ public:
         int target = total / k; // what each subset must sum to
 
         int used = 0;
+        memset(mem,-1,sizeof mem);
         return rec(nums.data(),n,0,0,k,target,used);
     }
 };

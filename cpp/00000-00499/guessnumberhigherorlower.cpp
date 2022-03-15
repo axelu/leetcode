@@ -1,31 +1,51 @@
 
-// 374. Guess Number Higher or Lower
-// https://leetcode.com/problems/guess-number-higher-or-lower/
-
-/**
- * Forward declaration of guess API.
- * @param  num   your guess
- * @return 	     -1 if num is lower than the guess number
- *			      1 if num is higher than the guess number
- *               otherwise return 0
- * int guess(int num);
- */
+// 375. Guess Number Higher or Lower II
+// https://leetcode.com/problems/guess-number-higher-or-lower-ii/
 
 class Solution {
-public:
-    int guessNumber(int n) {
-        int s = 1;
-        int e = n;
-        int pick = s + ((e - s)/2);
-        int result = guess(pick);
-        while( result != 0 ) {
-            if( result == -1 )
-                e = pick-1;
-            else
-                s = pick+1;
-            pick = s + ((e - s)/2);
-            result = guess(pick);
+private:
+    int mem[201][201];
+
+    int rec(int i, int j) {
+        // i <= j
+        if( i == j ) {
+            // we pick k == i == j
+            // we don't have to pay
+            return 0;
+
+        } else if( j - i == 1 ) {
+            // we would pick k == i and if we are wrong
+            // we would pay i
+            return i;
+
+        } else if( j - i == 2 ) {
+            // we pick k to be the number between i and j
+            // if we are wrong we have to pay k
+            return i+1;
+
+        } else {
+
+            if( mem[i][j] != -1 )
+                return mem[i][j];
+
+            int ret = INT_MAX;
+
+            // pick a number k between i and j inclusive
+            int t;
+            for(int k = i+1; k < j; ++k) {
+                t = k + max(rec(i,k-1),rec(k+1,j));
+                ret = min(ret,t);
+            }
+            return mem[i][j] = ret;
         }
-        return pick;
+    }
+
+public:
+    int getMoneyAmount(int n) {
+        // any number between 1 and n can be picked as the number to guess
+        // any number between 1 and n can be our guess
+
+        memset(mem,-1,sizeof mem);
+        return rec(1,n);
     }
 };
