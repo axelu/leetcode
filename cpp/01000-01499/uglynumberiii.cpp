@@ -18,8 +18,8 @@ private:
         return (a / gcd(a,b)) * b;
     }
 
-    int countUgly(int a, int b, int c, int target) {
-        int ans = 0;
+    long countUgly(long a, long b, long c, long target) {
+        long ans = 0;
 
         // for a good graphic see here:
         // https://leetcode.com/problems/ugly-number-iii/discuss/387554/CXX-Inclusion-Exclusion-and-Binary-Search
@@ -38,7 +38,6 @@ private:
 
 public:
     int nthUglyNumber(int n, int a, int b, int c) {
-
         // binary Search
         int start = 1;
         int end = INT_MAX;

@@ -29,7 +29,7 @@ private:
     }
 public:
     int createSortedArray(vector<int>& instructions) {
-        // Fenwick Tree
+        // Fenwick Tree aka Binary Indexed Tree
         size_t n = instructions.size();
         if( n == 1 ) return 0;
 

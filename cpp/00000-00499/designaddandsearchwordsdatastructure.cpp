@@ -2,8 +2,6 @@
 // 211. Design Add and Search Words Data Structure
 // https://leetcode.com/problems/design-add-and-search-words-data-structure/
 
-
-
 class WordDictionary {
 private:
     struct Trie {
@@ -12,7 +10,7 @@ private:
     };
 
     Trie* dic;
-
+    
     struct Trie* init() {
         struct Trie* tn =  new Trie;
 
@@ -24,11 +22,10 @@ private:
         return tn;
     }
 
-    void add(string& s) {
-        struct Trie* tn = dic;
-
+    void add(string& s, Trie* tn) {
+        int idx;
         for(int i = 0; i < s.size(); ++i) {
-            int idx = s[i] - 'a';
+            idx = s[i] - 'a';
             if (!tn->children[idx])
                 tn->children[idx] = init();
 
@@ -39,21 +36,20 @@ private:
         tn->endOfWord = true;
     }
 
-    bool find(string& s, int idx, Trie* localDic) {
-        struct Trie* tn = localDic;
+    bool find(string& s, int i, Trie* tn) {
 
-        for (int i = idx; i < s.length(); i++) {
+        char ch;
+        int idx;
+        for (; i < s.length(); ++i) {
             if( s[i] == '.' ) {
-                for(int c = 0; c < 26; ++c) {
-                    char ch = 'a' + c;
-                    s[i] = ch;
-                    if( find(s,i,tn) ) return true;
-                }
-                s[i] = '.';
+                for(idx = 0; idx < 26; ++idx)
+                    if( tn->children[idx] && find(s,i+1,tn->children[idx]) )
+                        return true;
+                
                 return false;
             } else {
-                int idx = s[i] - 'a';
-                if (!tn->children[idx])
+                idx = s[i] - 'a';
+                if( !tn->children[idx] )
                     return false;
 
                 tn = tn->children[idx];
@@ -67,11 +63,11 @@ public:
     WordDictionary() {
         dic = init();
     }
-
+    
     void addWord(string word) {
-        add(word);
+        add(word,dic);
     }
-
+    
     bool search(string word) {
         return find(word,0,dic);
     }
