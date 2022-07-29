@@ -5,6 +5,12 @@
 
 
 
+// original solution (dfs) passed 6/15/2021, but when it became a daily challenge
+// 7/11/2022 new test cases had been added and it failed with TLE on 186/195
+// added dfs2 that passed
+
+
+
 
 class Solution {
 private:
@@ -15,6 +21,8 @@ private:
             else cout << 0;
         }
     }
+
+    long sides[4];
 
     bool dfs(vector<int>& matchsticks, int n, int side, long sum, long target,
              int& mask, unordered_set<int>& seen) {
@@ -63,6 +71,23 @@ private:
         }
         return false;
     }
+
+    bool dfs2(vector<int>& matchsticks, int n, int i, long target) {
+        if( i == n )
+            return sides[0] == sides[1]  && sides[0] == sides[2]  && sides[0] == sides[3] ;
+
+        for(int k = 0; k < 4; ++k) {
+            if( sides[k] + (long)matchsticks[i] <= target ) {
+                sides[k] += matchsticks[i];
+                if( dfs2(matchsticks,n,i+1,target) )
+                    return true;
+                sides[k] -= matchsticks[i];
+            }
+        }
+
+        return false;
+    }
+
 public:
     bool makesquare(vector<int>& matchsticks) {
         int n = matchsticks.size();
@@ -86,8 +111,16 @@ public:
             return true;
         }
 
-        unordered_set<int> seen;
-        int mask = 0;
-        return dfs(matchsticks,n,0,0,target,mask,seen);
+        // unordered_set<int> seen;
+        // int mask = 0;
+        // return dfs(matchsticks,n,0,0,target,mask,seen);
+
+        sides[0] = 0L;
+        sides[1] = 0L;
+        sides[2] = 0L;
+        sides[3] = 0L;
+        sort(matchsticks.begin(),matchsticks.end(),greater<int>());
+        return dfs2(matchsticks,n,0,target);
+
     }
 };
