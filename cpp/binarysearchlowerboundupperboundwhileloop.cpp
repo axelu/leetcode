@@ -1,4 +1,23 @@
 
+// regular binary search
+
+        int s = validstartparam;
+        int e = validendparam;
+        int mid;
+        while(s <= e) {
+            mid = s + ((e-s)/2);
+            bool f = solve(...,mid);
+            if( f )
+                s = mid + 1;
+            else
+                e = mid - 1;
+        }
+        
+        return e;
+
+// e will be the best answer between [s,e] inclusive
+
+
 // binary search lower bound upper bound while loop will work with duplicates (dups)
 // https://www.geeksforgeeks.org/implementing-upper_bound-and-lower_bound-in-c/ 
 

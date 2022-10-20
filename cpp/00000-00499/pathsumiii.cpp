@@ -5,7 +5,6 @@
 
 
 
-
 /**
  * Definition for a binary tree node.
  * struct TreeNode {
@@ -18,18 +17,17 @@
  * };
  */
 
-// adapted from 560. Subarray Sum Equals K https://leetcode.com/problems/subarray-sum-equals-k/
 // adapted from 113. Path Sum II https://leetcode.com/problems/path-sum-ii/
 
 class Solution {
 private:
     int ans;
-
-    void dfs(TreeNode* root, int& sum, unordered_map<int,int>& mp, int& targetSum) {
-        int val = root->val;
-
+    
+    void dfs(TreeNode* root, long& sum, unordered_map<long,int>& mp, int& targetSum) {
+        long val = root->val;
+        
         sum += val;
-
+        
         auto f = mp.find(sum - targetSum);
         if( f != mp.end() )
             ans += f->second;
@@ -44,7 +42,7 @@ private:
         // right
         if( root->right != nullptr )
             dfs(root->right,sum,mp,targetSum);
-
+        
         // backtrack
         if( !p.second )
             --p.first->second;
@@ -52,18 +50,18 @@ private:
             mp.erase(sum);
         sum -= val;
     }
-
-
+    
+    
 public:
     int pathSum(TreeNode* root, int targetSum) {
         ans = 0;
         if( root == nullptr )
             return ans;
+        
+        
+        long sum = 0;
 
-
-        int sum = 0;
-
-        unordered_map<int,int> mp; // sum, number of occurences of sum
+        unordered_map<long,int> mp; // sum, number of occurences of sum
         mp.insert({0, 1});
 
         dfs(root,sum,mp,targetSum);

@@ -2,19 +2,17 @@
 // 875. Koko Eating Bananas
 // https://leetcode.com/problems/koko-eating-bananas/
 
-
-
 class Solution {
 private:
     // binary search less or equal target
-    int search(vector<int>& piles, int n, int s, int e, int target) {
+    int search(vector<int>& piles, int n, long s, long e, long target) {
         // cout << "search s " << s << " e " << e << endl;
         if( s > e )
             return -1;
-
-        int mid = s + ((e-s)/2);
+        
+        long mid = s + ((e-s)/2);
         // cout << "  mid " << mid << endl;
-        int d = 0;
+        long d = 0;
         for(int i = 0; i < n; ++i) {
             if( piles[i] <= mid ) {
                 ++d;
@@ -38,7 +36,7 @@ public:
         // ans lies between 1 and max piles[i]
         int n = piles.size();
         int mx = *max_element(piles.begin(),piles.end());
-
+        
         return search(piles,n,1,mx,h);
     }
 };

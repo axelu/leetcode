@@ -6,137 +6,97 @@
 
 class Solution {
 private:
-    struct QE {
-        int wordListIdx;
-        int depth;
-        vector<int> path;
-    };
+    void dfs(unordered_map<string,vector<string>>& g,
+             string& s,
+             vector<string>& path,
+             string& endWord,
+             vector<vector<string>>& ans) {
 
-    struct Trie {
-        struct Trie* children[26];
-        int endOfWord;
-    };
-
-    struct Trie* init() {
-        struct Trie* tn =  new Trie;
-        tn->endOfWord = -1;
-        for (int i = 0; i < 26; ++i)
-            tn->children[i] = NULL;
-        return tn;
-    }
-
-    void add(string& s, Trie* dic, int wordListIdx) {
-        struct Trie* tn = dic;
-        for(int i = 0; i < s.size(); ++i) {
-            int idx = s[i] - 'a';
-            if (!tn->children[idx])
-                tn->children[idx] = init();
-            tn = tn->children[idx];
+        if( s == endWord ) {
+            ans.push_back(path);
+            reverse(ans.back().begin(),ans.back().end());
+            return;
         }
-        // last node is end of word
-        tn->endOfWord = wordListIdx;
-    }
 
-    int search(string& s, Trie* dic) {
-        struct Trie* tn = dic;
-        for(int i = 0; i < s.length(); i++) {
-            int idx = s[i] - 'a';
-            if( !tn->children[idx] )
-                return -1;
-            tn = tn->children[idx];
+        for(auto& t: g[s] ) {
+            path.push_back(t);
+            dfs(g,t,path,endWord,ans);
+            // backtrack
+            path.pop_back();
         }
-        return tn != NULL ? tn->endOfWord : -1;
     }
 
 public:
     vector<vector<string>> findLadders(string beginWord, string endWord, vector<string>& wordList) {
-
-        int start = -1;
-        int end = -1;
-
-        // init dictionary
-        Trie* dic = init();
-        size_t wordListLength = wordList.size();
-        for(int i = 0; i < wordListLength; ++i) {
-            add(wordList[i],dic,i);
-            if( wordList[i] == beginWord ) start = i;
-            if( wordList[i] == endWord ) end = i;
-        }
-
         vector<vector<string>> ans;
 
+        // init dictionary
+        unordered_set<string> dic(wordList.begin(),wordList.end());
+
         // check if endWord is in wordList
-        if( -1 == end ) return ans;
-        size_t N = beginWord.size();             // endWord.length == beginWord.length == wordList[i].length
+        if( !dic.count(endWord) )
+            return ans;
+
+
+        int N = beginWord.size(); // endWord.length == beginWord.length == wordList[i].length
         if( 1 == N ) {
             vector<string> vs = {beginWord,endWord};
             ans.push_back(vs);
             return ans; // edge case
         }
 
-        if( -1 == start ) {
-            add(beginWord,dic,wordListLength);
-            start = wordListLength;
-            ++wordListLength;
-            wordList.push_back(beginWord);
-        }
-
-        // init graph
-        vector<int> G[wordListLength];
-        string t;
-        char oldChar,newChar;
-        vector<int> neighbors;
-        int neighbor;
-        int seen[wordListLength];
-        for(int i = 0; i < wordListLength; ++i) {
-            neighbors.clear();
-            t = wordList[i];
-            for(int j = 0; j < N; ++j) {
-                oldChar = t[j];
-                for(int k = 0; k < 26; ++k) {
-                    newChar = 'a'+k;
-                    if( newChar == oldChar ) continue;
-                    t[j] = newChar;
-                    // is our new word in the dictionary?
-                    neighbor = search(t,dic);
-                    if( -1 == neighbor ) continue;
-                    neighbors.push_back(neighbor);
-                }
-                t[j] = oldChar;
-            }
-            G[i] = neighbors;
-            seen[i] = 0;
-        }
-
-        // BFS to get shortest path from start to end
-        queue<QE> q;
-        q.push({start,1,{}});
-        QE qe;
-        vector<int> np;
-        int shortestPath = INT_MAX;
+        // lets build a directed graph from beginWord to endWord
+        // that only has the shortest paths
+        // because not all path will end at endWord, we will create
+        // reverse edges and start our final process at endWord
+        // BFS
+        unordered_map<string,vector<string>> g;
+        queue<string> q;
+        q.push(beginWord);
+        if( dic.count(beginWord) )
+            dic.erase(beginWord);
         while( !q.empty() ) {
-            qe = q.front();
-            q.pop();
+            if( q.front() == endWord )
+                break;
 
-            if( qe.depth > shortestPath ) break;
-            if( end == qe.wordListIdx ) {
-                vector<string> vs;
-                for(int i = 0; i < qe.path.size(); ++i)
-                    vs.push_back(wordList[qe.path[i]]);
-                vs.push_back(wordList[qe.wordListIdx]);
-                ans.push_back(vs);
-                shortestPath = qe.depth;
-            }
+            unordered_set<string> seen; // keep track of words added to queue
+            queue<string> q_new;
+            while( !q.empty() ) {
+                string s = q.front();
+                q.pop();
 
-            seen[qe.wordListIdx] = 1;
-            neighbors = G[qe.wordListIdx];
-            np = qe.path; np.push_back(qe.wordListIdx);
-            for(int i = 0; i < neighbors.size(); ++i) {
-                if( seen[neighbors[i]] ) continue;
-                q.push({neighbors[i],qe.depth+1,np});
+                // determine all neighbors of string s
+                string t = s;
+                for(int i = 0; i < N; ++i) {
+                    char oldChar = t[i];
+                    for(int k = 0; k < 26; ++k) {
+                        char newChar = 'a'+k;
+                        if( newChar == oldChar )
+                            continue;
+                        t[i] = newChar;
+                        // is our new word in the dictionary?
+                        if( dic.count(t) ) {
+                            // create directed edge from t to s
+                            g[t].push_back(s);
+                            // have we added t already to the queue?
+                            if( !seen.insert(t).second )
+                                continue;
+                            q_new.push(t);
+                        }
+                        // backtrack
+                        t[i] = oldChar;
+                    }
+                }
             }
+            // delete prior level words from dictionary
+            for(auto& k: seen)
+                dic.erase(k);
+            q = q_new;
         }
 
+        // populate ans
+        vector<string> path{endWord}; // path ends at endWord
+        dfs(g,endWord,path,beginWord,ans);
         return ans;
     }
 };
