@@ -3,137 +3,119 @@
 // https://leetcode.com/problems/word-search-ii/
 
 
-
-
-
-
 class Solution {
 private:
     struct Trie {
         struct Trie* children[26];
         bool endOfWord;
+        int words;
+        string s;
     };
-
-    Trie* root;
 
     struct Trie* init() {
         struct Trie* tn =  new Trie;
 
         tn->endOfWord = false;
-        for(int i = 0; i < 26; ++i)
+        tn->words = 0;
+ 
+        for (int i = 0; i < 26; ++i)
             tn->children[i] = NULL;
 
         return tn;
     }
 
-    Trie* add(char c, Trie* dic) {
-        struct Trie* tn = dic;
+    void add(string& s, Trie* tn) {
 
-        int idx = c - 'a';
-        if( !tn->children[idx] )
-            tn->children[idx] = init();
-        tn = tn->children[idx];
-        // last node is end of word
-        tn->endOfWord = true;
-        return tn;
-    }
-
-    bool search(string& s, Trie* dic) {
-        struct Trie* tn = dic;
-
-        for(int i = 0; i < s.length(); i++) {
-            int idx = s[i] == '#' ? 26 : s[i] - 'a';
-            if( !tn->children[idx] )
-                return false;
+        for(int i = 0; i < s.size(); ++i) {
+            ++tn->words;
+            int idx = s[i] - 'a';
+            if (!tn->children[idx])
+                tn->children[idx] = init();
 
             tn = tn->children[idx];
         }
 
-        return (tn != NULL && tn->endOfWord);
+        // last node is end of word
+        tn->endOfWord = true;
+        tn->s = s;
     }
-
-    int letters[26];
-
-    bool areAlllettersOfWordInGrid(string s) {
-        for(char c : s)
-            if( !letters[c-'a'] ) return false;
-        return true;
-    }
-
-    int m,n;
-    bool found;
-
-
+    
+    int m,n;    
+    int seen[12][12];
+    vector<string> ans;
+     
     // directions right,down,left,up
     int dirR[4] = {0,1,0,-1};
     int dirC[4] = {1,0,-1,0};
+    
+    int dfs(vector<vector<char>>& board, int i, int j, Trie* tn) {
 
-    void dfs(vector<vector<char>>& board, int i, int j, string& word, int idx, int seen[], Trie* root) {
-        Trie* tn = add(board[i][j],root);
-        if( board[i][j] != word[idx] ) return;
-        if( idx == word.size()-1 ) {
-            // we are done
-            found = true;
-            return;
+        int idx = board[i][j] - 'a';
+        Trie* tn_nxt = tn->children[idx];
+        if( !tn_nxt )
+            return 0;
+
+        int ret = 0;
+
+        if( tn_nxt->endOfWord ) {
+            ans.push_back(tn_nxt->s);
+            tn_nxt->endOfWord = false;
+            ++ret;
         }
-        int seenIdx = i*n+j;
-        seen[seenIdx] = 1;
 
-        int i_new,j_new;
-        // explore in all four directions
+        if( tn_nxt->words == 0 )
+            return ret;
+
+        seen[i][j] = 1;
+
         for(int k = 0; k < 4; ++k) {
-            i_new = i + dirR[k];
-            if( i_new < 0 || i_new == m ) continue;
-            j_new = j + dirC[k];
-            if( j_new < 0 || j_new == n ) continue;
+            int i_new = i + dirR[k];
+            if( i_new < 0 || i_new == m )
+                continue;
+            
+            int j_new = j + dirC[k];
+            if( j_new < 0 || j_new == n )
+                continue;
 
-            // is the new cell already part of the path?
-            if( seen[i_new*n+j_new] ) continue;
+            if( seen[i_new][j_new] )
+                continue;
 
-            dfs(board,i_new,j_new,word,idx+1,seen,tn);
-            if( found ) break;
+            int t = dfs(board,i_new,j_new,tn_nxt);
+            tn_nxt->words -= t; 
+            ret += t;
+            if( tn_nxt->words == 0 )
+                break;
         }
         // backtrack
-        seen[seenIdx] = 0;
+        seen[i][j] = 0;
+        return ret;
     }
-
+    
 public:
     vector<string> findWords(vector<vector<char>>& board, vector<string>& words) {
         m = board.size();    // rows
         n = board[0].size(); // cols
+      
+        Trie* root = init();
 
-        int i,j,k;
-        memset(letters,0,sizeof letters);
-        for(int i = 0; i < m; ++i)
-            for(int j = 0; j < n; ++j)
-                letters[board[i][j]-'a'] = 1;
+        for(auto& s: words)
+            add(s,root);
 
-
-        root = init();
-        int seen[m*n];memset(seen,0,sizeof seen);
-        vector<string> ans;
-        for(k = 0; k < words.size(); ++k) {
-
-            if( search(words[k],root) ) {
-                ans.push_back(words[k]);
+        for(int k = 0; k < 26; ++k) {
+            if( !root->children[k] )
                 continue;
-            }
 
-            if( !areAlllettersOfWordInGrid(words[k]) ) continue;
-
-            // each cell could be the starting point
-            found = false;
             for(int i = 0; i < m; ++i) {
                 for(int j = 0; j < n; ++j) {
-                    dfs(board,i,j,words[k],0,seen,root);
-                    if( found ) {
-                        ans.push_back(words[k]);
-                        break;
+                    if( board[i][j]-'a' == k ) {
+                        memset(seen,0,sizeof seen);
+                        int t = dfs(board,i,j,root);
+                        root->words -= t;
+                        if( root->words == 0 )
+                            break;
                     }
                 }
-                if( found ) break;
             }
-
         }
 
         return ans;

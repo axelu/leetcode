@@ -30,6 +30,7 @@ public:
 
 
         // determine index of left most tree
+        sort(trees.begin(),trees.end());
         int left_most = 0;
         for(int i = 0; i < n; ++i)
             if( trees[i][0] < trees[left_most][0])

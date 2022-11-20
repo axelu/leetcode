@@ -1,9 +1,5 @@
 
 
-
-
-
-
 class Solution {
 private:
     void kmp_table(string& W, int T[]) {
@@ -87,3 +83,96 @@ public:
         return false;
     }
 };
+
+
+// ALTERNATIVE IMPLEMENTATION ( 2 different versions )
+// https://www.scaler.com/topics/data-structures/kmp-algorithm/
+
+vector<int> lps_table1(string& pattern) {
+    // LPS (longest proper prefix that is also a suffix)
+    int m = pattern.size();
+    vector<int> LPS(m);
+    LPS[0] = 0;  // LPS value of the first element is always 0
+    int len = 0; // length of previous longest proper prefix that is also a suffix
+    int i = 1;
+    while( i < m ) {
+        if( pattern[i] == pattern[len] ) {
+            len = len + 1;
+            LPS[i] = len;
+            i = i + 1;
+        } else {
+            if( len != 0 )
+                len = LPS[len - 1];
+            else {
+                LPS[i] = 0;
+                i = i + 1;
+            }
+        }
+    }
+    return LPS;
+}
+
+// how to use the LPS table:
+// If there is a match, increment both i and j.
+// If there is a mismatch after a match, place j at LPS[pattern[j - 1]] and compare again.
+// If j = 0, and there is a mismatch, increment i.
+
+int kmp_search1(string& pattern, string& s) {
+    // returns index of the 1st match of pattern in s or -1 if not found
+    int n = s.size();
+    int m = pattern.size();
+
+    vector<int> LPS = lps_table1(pattern);
+    int i = 0;
+    int j = 0;
+    while( i < n ) {
+        if( pattern[j] == s[i] ) {
+            i = i + 1;
+            j = j + 1;
+            if( j == m )        // j pointer has reached end of pattern
+                return i - j;   // index of the match
+
+        } else if( pattern[j] != s[i] && i < n ) {
+            if( j > 0 )
+                j = LPS[j - 1];
+            else
+                i = i + 1;
+        }
+    }
+    return -1;  // no match
+}
+
+vector<int> lps_table2(string& pattern) {
+    // LPS (longest proper prefix that is also a suffix)
+    int m = pattern.size();
+    vector<int> LPS(m);
+    LPS[0] = 0;  // LPS value of the first element is always 0
+    int k = 0; // length of previous longest proper prefix that is also a suffix
+    for(int i = 1; i < m; ++i) {
+        while( pattern[i] != pattern[k] && k > 0 )
+            k = LPS[k-1];
+        if( pattern[i] == pattern[k] )
+            LPS[i]=++k;
+    }
+    return LPS;
+}
+
+int kmp_search2(string& pattern, string& s) {
+    // returns index of the 1st match of pattern in s or -1 if not found
+    int n = s.size();
+    int m = pattern.size();
+
+    vector<int> LPS = lps_table1(pattern);
+    int j = 0; // index into pattern
+    for(int i = 0; i < n; ++i) {
+        while( pattern[j] != s[i] && j > 0)
+            j = LPS[j-1];
+        if( pattern[j] == s[i] ) {
+            ++j;
+            if( j == m )            // j pointer has reached end of pattern
+               return (i+1) - j;    // index of the match
+        }
+    }
+    return -1;  // no match
+}
+
