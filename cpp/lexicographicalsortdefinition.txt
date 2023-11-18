@@ -1,0 +1,8 @@
+
+A string s is lexicographically greater than a string t if 
+in the first position where s and t differ, string s has a letter 
+that appears later in the alphabet than the corresponding letter in t. 
+
+If the first min(s.length, t.length) characters do not differ, 
+then the longer string is the lexicographically greater one.
+
