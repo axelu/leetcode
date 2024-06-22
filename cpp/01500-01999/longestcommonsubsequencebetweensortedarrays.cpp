@@ -7,7 +7,7 @@
 
 class Solution {
 public:
-    vector<int> longestCommomSubsequence(vector<vector<int>>& arrays) {
+    vector<int> longestCommonSubsequence(vector<vector<int>>& arrays) {
         int n = arrays.size();
 
         int cnt[101];memset(cnt,0,sizeof cnt);

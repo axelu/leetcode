@@ -2,9 +2,6 @@
 // 931. Minimum Falling Path Sum
 // https://leetcode.com/problems/minimum-falling-path-sum/
 
-
-
-
 class Solution {
 private:
     int mem[101][101];
@@ -13,7 +10,7 @@ private:
         if( r == n )
             return 0;
 
-        if( mem[r][c] != -1 )
+        if( mem[r][c] != INT_MIN )
             return mem[r][c];
 
         // we have three choices
@@ -36,7 +33,10 @@ public:
     int minFallingPathSum(vector<vector<int>>& matrix) {
         int n = matrix.size(); // n == matrix.length == matrix[i].length
 
-        memset(mem,-1,sizeof mem);
+        // INT_MIN indicates not having been there
+        for(int i = 0; i < n; ++i)
+            for(int j = 0; j < n; ++j)
+                mem[i][j] = INT_MIN;
 
         int ans = INT_MAX;
         for(int i = 0; i < n; ++i)

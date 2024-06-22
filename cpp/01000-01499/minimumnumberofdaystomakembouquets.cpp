@@ -3,15 +3,13 @@
 // https://leetcode.com/problems/minimum-number-of-days-to-make-m-bouquets/
 
 
-
-
 class Solution {
 private:
     int * blooming;
-
+    
     bool canMakeBouquets(vector<int>& bloomDay, int n, int days, int m, int k) {
         // can we make m bouquets that require k **adjacent** flowers in 'days' days?
-
+        
         int c = 0;     // number of continues flowers
         int total = 0; // number of bouquets made
         for(int i = 0; i < n && total < m; ++i) {
@@ -24,15 +22,15 @@ private:
                 ++total;
             }
         }
-
+        
         return total == m;
     }
-
+    
     // binary search
     int search(vector<int>& bloomDay, int n, int s, int e, int m, int k) {
         if( s > e )
             return -1;
-
+        
         int mid = s + ((e-s)/2);
         bool f = canMakeBouquets(bloomDay,n,mid,m,k);
         if( f ) {
@@ -43,26 +41,26 @@ private:
             return search(bloomDay,n,mid+1,e,m,k);
         }
     }
-
+    
 public:
     int minDays(vector<int>& bloomDay, int m, int k) {
-        // m = number of bouquets to make.
+        // m = number of bouquets to make. 
         // k = number of **adjacent** flowers needed to make a bouquet
-
-        int n = bloomDay.size(); // number of flowers
-        if( m * k > n )
+                
+        long n = bloomDay.size(); // number of flowers
+        if( (long)m * (long)k > n )
             return -1;
-
+        
         int mx = INT_MIN;
         int mn = INT_MAX;
         for(int i = 0; i < n; ++i) {
             mx = max(mx,bloomDay[i]);
             mn = min(mn,bloomDay[i]);
         }
-
+                                 
         if( m * k == n ) // all flowers must bloom
             return mx;
-
+        
         // it will take at least mn day and max mx days
         return search(bloomDay,n,mn,mx,m,k);
     }
