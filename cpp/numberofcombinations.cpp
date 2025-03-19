@@ -1,7 +1,10 @@
 #include <iostream>
 
 // number of combinations
-
+// binomial coefficient
+// (number of combinations is same as binomial coefficient)
+// typically the notation is different, but it is the same
+// see here https://math.stackexchange.com/questions/2835377/combination-notation-vs-binomial-coefficient-formula
 
 using namespace std;
 

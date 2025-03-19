@@ -49,7 +49,7 @@ int main() {
             exponent = exponent >> 1;
         }
 
-        return ret;
+        return ret % mod;
     }    
 
 */
