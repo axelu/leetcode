@@ -14,7 +14,7 @@ public:
         // let ti be the number of times a given index i is covered by a query
         // if ti >= nums[i] then we can bring nums[i] to 0
 
-        int line[n+1];memset(line,0,sizeof line);
+        int line[100001];memset(line,0,sizeof line);
 
         for(int i = 0; i < queries.size(); ++i) {
             int l = queries[i][0];
