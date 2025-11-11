@@ -1,22 +1,11 @@
 
 // 966. Vowel Spellchecker
 // https://leetcode.com/problems/vowel-spellchecker/
-// day 22 March 2021 bonus challenge
-// https://leetcode.com/explore/challenge/card/march-leetcoding-challenge-2021/591/week-4-march-22nd-march-28th/3681/
-
 
 
 class Solution {
-private:
-
-    string str_tolower(string s) {
-        transform(s.begin(),s.end(),s.begin(),[](unsigned char c){
-            return tolower(c);
-        });
-        return s;
-    }
-
-    string str_novowel(string s) {
+private: 
+    string str_tolowernovowel(string s) {
         transform(s.begin(),s.end(),s.begin(),[](char c){
             if( c == 'a' || c == 'A' ||
                 c == 'e' || c == 'E' ||
@@ -24,12 +13,24 @@ private:
                 c == 'o' || c == 'O' ||
                 c == 'u' || c == 'U') {
               return '*';
+            } else {
+                return (char)tolower(c); 
             }
-            return c;
         });
         return s;
     }
 
+    bool isvowel(char c) {
+        if( c == 'a' || c == 'A' ||
+            c == 'e' || c == 'E' ||
+            c == 'i' || c == 'I' ||
+            c == 'o' || c == 'O' ||
+            c == 'u' || c == 'U') {
+            return true;
+        }
+        return false;
+    }
+                        
     struct Trie {
         char c;
         vector<Trie*> children;
@@ -40,7 +41,8 @@ private:
 
     Trie* getChild(Trie* dic, char c) {
         Trie* child = nullptr;
-        for(int i = 0; i < dic->children.size(); ++i)
+        int children_sz = dic->children.size();
+        for(int i = 0; i < children_sz; ++i)
             if( dic->children[i]->c == c ) {
                 child = dic->children[i];
                 break;
@@ -51,73 +53,94 @@ private:
     void add(string& s, Trie* dic, string& o) {
         Trie* tn = dic;
 
-        for(int i = 0; i < s.size(); ++i) {
-            Trie* child = getChild(tn,s[i]);
+        for(char c: s) {
+            Trie* child = getChild(tn, c);
             if( child == nullptr ) {
-                child = new Trie(s[i]);
+                child = new Trie(c);
                 tn->children.push_back(child);
             }
             tn = child;
         }
         // last node is end of word
-        if( tn->endOfWord.empty() ) tn->endOfWord = o;
+        if( tn->endOfWord.empty() ) 
+            tn->endOfWord = o;
     }
 
-    string search(Trie* dic, string& s) {
-        Trie* tn = dic;
-
-        for(int i = 0; i < s.length(); i++) {
-            Trie* child = nullptr;
-            for(int j = 0; j < tn->children.size(); ++j) {
-                if( tn->children[j]->c == s[i] ) {
-                    child = tn->children[j];
-                    break;
-                }
-            }
-            if( child == nullptr )
-                return "";
-
-            tn = child;
+    // recursive
+    bool search_exact(Trie* dic, string& s, int n, int pos, string& t) {
+        if( pos == n ) {
+            t = dic->endOfWord;
+            return !dic->endOfWord.empty();
         }
 
-        return tn != nullptr && !tn->endOfWord.empty() ? tn->endOfWord : "";
+        char c = s[pos];
+
+        bool ret = false;
+
+        Trie* child = getChild(dic, c);
+        if( child != nullptr )
+            ret = search_exact(child, s, n, pos+1, t);
+
+        return ret;
+    }
+
+    // recursive
+    bool search_case_insensitive(Trie* dic, string& s, int n, int pos, string& t) {
+        if( pos == n ) {
+            t = dic->endOfWord;
+            return !dic->endOfWord.empty();
+        }
+
+        char c = tolower(s[pos]);
+
+        bool ret = false;
+
+        int children_sz = dic->children.size();
+        for(int i = 0; i < children_sz; ++i)
+            if( tolower(dic->children[i]->c) == c ) {
+                Trie* child = dic->children[i];
+                ret = search_case_insensitive(child, s, n, pos+1, t);
+                if( ret )
+                    break;
+            }
+
+        return ret;
     }
 
 public:
     vector<string> spellchecker(vector<string>& wordlist, vector<string>& queries) {
-
-        Trie* dic = new Trie();
-        Trie* dicLowerNoVowel = new Trie();
-        string t;
-        for(int i = 0; i < wordlist.size(); ++i) {
-            t = wordlist[i];
-            add(t,dic,wordlist[i]);
-            t = str_tolower(wordlist[i]);
-            add(t,dicLowerNoVowel,wordlist[i]);
-            t = str_novowel(t);
-            if( t != wordlist[i]) add(t,dicLowerNoVowel,wordlist[i]);
+        // 1 <= wordlist[i].length, queries[i].length <= 7
+        Trie* dic[8];
+        Trie* dicLowerNoVowel[8];
+        for(int i = 0; i < 8; ++i) {
+            dic[i] = new Trie();
+            dicLowerNoVowel[i] = new Trie();
         }
 
-        int n = queries.size();
-        vector<string> ans(n);
-        string res;
-        for(int i = 0; i < n; ++i) {
-            res = search(dic,queries[i]);
-            if( !res.empty() ) {
+        for(string& s: wordlist) {
+            add(s, dic[s.size()], s);
+            string t = str_tolowernovowel(s);
+            if( t != s ) 
+                add(t, dicLowerNoVowel[s.size()], s);
+        }
+
+        int q_sz = queries.size();
+        vector<string> ans(q_sz);
+
+        for(int i = 0; i < q_sz; ++i) {
+            int s_sz =  queries[i].size();
+            string res = "";
+            if( search_exact(dic[s_sz], queries[i], s_sz, 0, res) ) {
                 ans[i] = res;
-                continue;
-            }
-            t = str_tolower(queries[i]);
-            if( t != queries[i] ) {
-                res = search(dicLowerNoVowel,t);
-                if( !res.empty() ) {
+            } else if( search_case_insensitive(dic[s_sz], queries[i], s_sz, 0, res) ) {
+                ans[i] = res;
+            } else {
+                string t = str_tolowernovowel(queries[i]);
+                if( t != queries[i] &&  search_exact(dicLowerNoVowel[s_sz], t, s_sz, 0, res) )
                     ans[i] = res;
-                    continue;
-                }
-            }
-            t = str_novowel(t);
-            ans[i] = search(dicLowerNoVowel,t);
+            }      
         }
+
         return ans;
     }
 };
