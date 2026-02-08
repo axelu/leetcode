@@ -5,7 +5,7 @@
 
 class Solution {
 private:
-    int t[10000001]; // binary indexed tree bit
+    int t[10000001]; // binary indexed tree bit, range query (max), point update
     int maxIdx = 10000000;
 
     // binary indexed tree can support range queries for min, max

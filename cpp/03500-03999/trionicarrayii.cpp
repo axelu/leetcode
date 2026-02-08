@@ -4,11 +4,9 @@
 
 
 
-
-
 class Solution {
 private:
-    // array<long long, 4> 0: left val, 1: right val, 2: strictly increasing 1 yes 0 no, 3: sum
+    // array<long long, 4> 0: left val, 1: right val, 2: strictly decreasing 1 yes 0 no, 3: sum
     array<long long, 4> t[400000]; // segment tree, range query
 
     array<long long, 4> combine(array<long long, 4>& a, array<long long, 4>& b) {
@@ -16,12 +14,14 @@ private:
             return b;
         if( b[2] == -1 )
             return a;
-
+        
         array<long long, 4> ret;
         ret[0] = a[0];
         ret[1] = b[1];
         ret[2] = a[2] & b[2];
-        ret[3] = a[3] + b[3];
+        if( ret[2] )
+            ret[2] = a[1] > b[0];
+        ret[3] = a[3] + b[3]; // should be -INF if not strictly decreasing???
         return ret;
     }
 
@@ -40,7 +40,7 @@ private:
     }
 
     array<long long, 4> get(int v, int tl, int tr, int l, int r) {
-        if (l > r)
+        if (l > r) 
             return {-1,-1,-1,-1};
         if (l == tl && r == tr) {
             return t[v];
@@ -91,7 +91,7 @@ public:
         // l < p < q < r with 0 <= l < r < n
 
         // if we identify each second leg p..q, that has a fixed sum
-        // then we can find then max sum 1st leg and
+        // then we can find then max sum 1st leg and 
         // max sum third leg
 
         // 0 < p < n-2 => pmin = 1, pmax = n-3
@@ -101,7 +101,7 @@ public:
         for(int i = 1; i <= n-3; ++i)
             if( nums[i-1] < nums[i] && nums[i] > nums[i+1] )
                 ps.push_back(i);
-
+        
         vector<int> qs; // valey indices aka indices where nums[ps[i-1]] > nums[ps[i]] < nums[ps[i+1]]
         for(int i = 2; i <= n-2; ++i)
             if( nums[i-1] > nums[i] && nums[i] < nums[i+1] )
@@ -126,11 +126,11 @@ public:
             }
             if( q != -1 ) {
                 // nums[p], nums[p+1], ... , nums[q-1], nums[q]
-                // must be strictly increasing
+                // must be strictly decreasing
                 auto arr = get(1, 0, n-1, p, q);
                 if( arr[2] != 1LL )
                     continue;
-
+                
                 long long sum_leg2 = arr[3];
 
                 // TODO make this faster !!!
